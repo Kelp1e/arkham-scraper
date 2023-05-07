@@ -11,14 +11,14 @@ from apps.users.managers import CustomUserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
     pkid = models.BigAutoField(primary_key=True, editable=False)
-    id = models.UUIDField(default=uuid.uuid4(), editable=False, unique=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     username = models.CharField(verbose_name=_('Username'), max_length=255, unique=True)
     first_name = models.CharField(verbose_name=_('First name'), max_length=50)
     last_name = models.CharField(verbose_name=_('Last name'), max_length=50)
     email = models.EmailField(verbose_name=_('Email Address'), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now())
+    date_joined = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
