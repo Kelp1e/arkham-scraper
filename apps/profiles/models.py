@@ -17,7 +17,7 @@ class Gender(models.TextChoices):
 
 class Profile(TimeStampedUUIDModel):
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
-    phone_number = PhoneNumberField(verbose_name=_("Phone Number"), max_length=30, default="+41524204242")
+    phone_number = PhoneNumberField(verbose_name=_("Phone Number"), max_length=30, default="+380123456789")
     about_me = models.TextField(verbose_name=_("About Me"), default="say something about yourself")
     license = models.CharField(verbose_name=_("Real Estate license"), max_length=20, blank=True, null=True)
     profile_photo = models.ImageField(verbose_name=_("Profile Photo"), default="/profile_default.png")
