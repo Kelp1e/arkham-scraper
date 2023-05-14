@@ -2,6 +2,8 @@ version: "3.9"
 
 services:
   api:
+    ports:
+      - "8000:8000"
     build:
       context: .
       dockerfile: ./docker/local/django/Dockerfile
