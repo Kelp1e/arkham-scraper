@@ -17,4 +17,3 @@ class Enquiry(TimeStampedUUIDModel):
 
     class Meta:
         verbose_name_plural = "Enquiries"
-
