@@ -35,7 +35,6 @@ down-v:
 volume:
 	docker volume inspect react_djangorest_postgres_data
 
-
 estate-db:
 	docker compose exec postgres-db psql --username=postgres --dbname=estate
 
