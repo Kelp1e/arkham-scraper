@@ -1,18 +1,19 @@
 from django.urls import path
 
-from apps.properties.views import (ListAgentsPropertyAPIView,
-                                   ListAllPropertiesAPIView,
-                                   PropertyDetailView, PropertySearchAPIView,
-                                   create_property_api_view,
-                                   delete_property_api_view,
-                                   update_property_api_view)
+from . import views
 
 urlpatterns = [
-    path("all/", ListAllPropertiesAPIView.as_view(), name="all_properties"),
-    path("agents/", ListAgentsPropertyAPIView.as_view(), name="agent-properties"),
-    path("create/", create_property_api_view, name="property-create"),
-    path("details/<slug:slug>/", PropertyDetailView.as_view(), name="details"),
-    path("update/<slug:slug>/", update_property_api_view, name="update-property-api"),
-    path("delete/<slug:slug>/", delete_property_api_view, name="delete-property-api"),
-    path("search/", PropertySearchAPIView.as_view(), name="property-search"),
+    path("all/", views.ListAllPropertiesAPIView.as_view(), name="all-properties"),
+    path(
+        "agents/", views.ListAgentsPropertiesAPIView.as_view(), name="agent-properties"
+    ),
+    path("create/", views.create_property_api_view, name="property-create"),
+    path(
+        "details/<slug:slug>/",
+        views.PropertyDetailView.as_view(),
+        name="property-details",
+    ),
+    path("update/<slug:slug>/", views.update_property_api_view, name="update-property"),
+    path("delete/<slug:slug>/", views.delete_property_api_view, name="delete-property"),
+    path("search/", views.PropertySearchAPIView.as_view(), name="property-search"),
 ]

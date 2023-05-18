@@ -1,8 +1,7 @@
 import factory
+from apps.profiles.models import Profile
 from django.db.models.signals import post_save
 from faker import Factory as FakerFactory
-
-from apps.profiles.models import Profile
 from real_estate.settings.base import AUTH_USER_MODEL
 
 faker = FakerFactory.create()
@@ -14,7 +13,9 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     phone_number = factory.LazyAttribute(lambda x: faker.phone_number())
     about_me = factory.LazyAttribute(lambda x: faker.sentence(nb_words=5))
     license = factory.LazyAttribute(lambda x: faker.text(max_nb_chars=6))
-    profile_photo = factory.LazyAttribute(lambda x: faker.file_extension(category="image"))
+    profile_photo = factory.LazyAttribute(
+        lambda x: faker.file_extension(category="image")
+    )
     gender = factory.LazyAttribute(lambda x: f"other")
     country = factory.LazyAttribute(lambda x: faker.country_code())
     city = factory.LazyAttribute(lambda x: faker.city())

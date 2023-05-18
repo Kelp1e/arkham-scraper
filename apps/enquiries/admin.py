@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.enquiries.models import Enquiry
+from .models import Enquiry
 
 
 class EnquiryAdmin(admin.ModelAdmin):

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.ratings.models import Rating
+from .models import Rating
 
 
 class RatingAdmin(admin.ModelAdmin):

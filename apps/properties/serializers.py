@@ -2,13 +2,14 @@ from django_countries.serializer_fields import CountryField
 from django_countries.serializers import CountryFieldMixin
 from rest_framework import serializers
 
-from apps.properties.models import Property, PropertyViews
+from .models import Property, PropertyViews
 
 
 class PropertySerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     country = CountryField(name_only=True)
     cover_photo = serializers.SerializerMethodField()
+    profile_photo = serializers.SerializerMethodField()
     photo1 = serializers.SerializerMethodField()
     photo2 = serializers.SerializerMethodField()
     photo3 = serializers.SerializerMethodField()
@@ -19,6 +20,7 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
+            "profile_photo",
             "title",
             "slug",
             "ref_code",
@@ -27,7 +29,6 @@ class PropertySerializer(serializers.ModelSerializer):
             "city",
             "postal_code",
             "street_address",
-            "property_address",
             "property_number",
             "price",
             "tax",
@@ -39,10 +40,10 @@ class PropertySerializer(serializers.ModelSerializer):
             "advert_type",
             "property_type",
             "cover_photo",
-            "photo_1",
-            "photo_2",
-            "photo_3",
-            "photo_4",
+            "photo1",
+            "photo2",
+            "photo3",
+            "photo4",
             "published_status",
             "views",
         ]
@@ -51,7 +52,7 @@ class PropertySerializer(serializers.ModelSerializer):
         return obj.user.username
 
     def get_cover_photo(self, obj):
-        return obj.cover_photo_url
+        return obj.cover_photo.url
 
     def get_photo1(self, obj):
         return obj.photo1.url
@@ -64,6 +65,9 @@ class PropertySerializer(serializers.ModelSerializer):
 
     def get_photo4(self, obj):
         return obj.photo4.url
+
+    def get_profile_photo(self, obj):
+        return obj.user.profile.profile_photo.url
 
 
 class PropertyCreateSerializer(serializers.ModelSerializer):

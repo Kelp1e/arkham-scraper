@@ -33,10 +33,10 @@ down-v:
 	docker compose down -v
 
 volume:
-	docker volume inspect real_estate_postgres_data
+	docker volume inspect estate-src_postgres_data
 
 estate-db:
-	docker compose exec postgres-db psql --username=postgres --dbname=estate
+	docker compose exec postgres-db psql --username=admin --dbname=estate
 
 test:
 	docker compose exec api pytest -p no:warnings --cov=.
@@ -64,3 +64,5 @@ isort-diff:
 
 isort:
 	docker compose exec api isort . --skip env --skip migrations
+
+

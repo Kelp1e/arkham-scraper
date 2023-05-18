@@ -4,11 +4,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from apps.profiles.models import Profile
-from apps.ratings.models import Rating
+
+from .models import Rating
 
 User = get_user_model()
 
-
+# create agent review
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
 def create_agent_review(request, profile_id):
@@ -18,21 +19,20 @@ def create_agent_review(request, profile_id):
     profile_user = User.objects.get(pkid=agent_profile.user.pkid)
     if profile_user.email == request.user.email:
         formatted_response = {"message": "You can't rate yourself"}
-
         return Response(formatted_response, status=status.HTTP_403_FORBIDDEN)
 
-    already_exist = agent_profile.agent_review.filter(
+    alreadyExists = agent_profile.agent_review.filter(
         agent__pkid=profile_user.pkid
-    ).exist()
+    ).exists()
 
-    if already_exist:
+    if alreadyExists:
         formatted_response = {"detail": "Profile already reviewed"}
-
         return Response(formatted_response, status=status.HTTP_400_BAD_REQUEST)
+
     elif data["rating"] == 0:
-        formatted_response = {"detail": "Profile select a rating"}
-
+        formatted_response = {"detail": "Please select a rating"}
         return Response(formatted_response, status=status.HTTP_400_BAD_REQUEST)
+
     else:
         review = Rating.objects.create(
             rater=request.user,
@@ -47,4 +47,6 @@ def create_agent_review(request, profile_id):
         for i in reviews:
             total += i.rating
 
+        agent_profile.rating = round(total / len(reviews), 2)
+        agent_profile.save()
         return Response("Review Added")

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.properties.models import Property, PropertyViews
+from .models import Property, PropertyViews
 
 
 class PropertyAdmin(admin.ModelAdmin):

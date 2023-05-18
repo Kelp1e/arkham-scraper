@@ -1,29 +1,32 @@
 import logging
 
 import django_filters
+from django.db.models import query
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.properties.exceptions import PropertyNotFound
-from apps.properties.models import Property, PropertyViews
-from apps.properties.pagination import PropertyPagination
-from apps.properties.serializers import (PropertyCreateSerializer,
-                                         PropertySerializer,
-                                         PropertyViewSerializer)
+from .exceptions import PropertyNotFound
+from .models import Property, PropertyViews
+from .pagination import PropertyPagination
+from .serializers import (PropertyCreateSerializer, PropertySerializer,
+                          PropertyViewSerializer)
 
 logger = logging.getLogger(__name__)
 
 
 class PropertyFilter(django_filters.FilterSet):
+
     advert_type = django_filters.CharFilter(
         field_name="advert_type", lookup_expr="iexact"
     )
+
     property_type = django_filters.CharFilter(
         field_name="property_type", lookup_expr="iexact"
     )
+
     price = django_filters.NumberFilter()
     price__gt = django_filters.NumberFilter(field_name="price", lookup_expr="gt")
     price__lt = django_filters.NumberFilter(field_name="price", lookup_expr="lt")
@@ -42,12 +45,14 @@ class ListAllPropertiesAPIView(generics.ListAPIView):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
+
     filterset_class = PropertyFilter
     search_fields = ["country", "city"]
     ordering_fields = ["created_at"]
 
 
-class ListAgentsPropertyAPIView(generics.ListAPIView):
+class ListAgentsPropertiesAPIView(generics.ListAPIView):
+
     serializer_class = PropertySerializer
     pagination_class = PropertyPagination
     filter_backends = [
@@ -55,13 +60,13 @@ class ListAgentsPropertyAPIView(generics.ListAPIView):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
+    filterset_class = PropertyFilter
     search_fields = ["country", "city"]
     ordering_fields = ["created_at"]
 
     def get_queryset(self):
         user = self.request.user
         queryset = Property.objects.filter(user=user).order_by("-created_at")
-
         return queryset
 
 
@@ -76,11 +81,11 @@ class PropertyDetailView(APIView):
 
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
-            ip = x_forwarded_for.slit(",")[0]
+            ip = x_forwarded_for.split(",")[0]
         else:
             ip = request.META.get("REMOTE_ADDR")
 
-        if not PropertyViews.objects.filter(property=property, ip=ip).exist():
+        if not PropertyViews.objects.filter(property=property, ip=ip).exists():
             PropertyViews.objects.create(property=property, ip=ip)
 
             property.views += 1
@@ -105,16 +110,12 @@ def update_property_api_view(request, slug):
             {"error": "You can't update or edit a property that doesn't belong to you"},
             status=status.HTTP_403_FORBIDDEN,
         )
-
     if request.method == "PUT":
         data = request.data
         serializer = PropertySerializer(property, data, many=False)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        return Response(
-            serializer.data,
-        )
+        return Response(serializer.data)
 
 
 @api_view(["POST"])
@@ -130,7 +131,6 @@ def create_property_api_view(request):
         logger.info(
             f"property {serializer.data.get('title')} created by {user.username}"
         )
-
         return Response(serializer.data)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -147,7 +147,7 @@ def delete_property_api_view(request, slug):
     user = request.user
     if property.user != user:
         return Response(
-            {"error": "You cant delete a property that doesn't belong to you"},
+            {"error": "You can't delete a property that doesn't belong to you"},
             status=status.HTTP_403_FORBIDDEN,
         )
 
@@ -158,25 +158,21 @@ def delete_property_api_view(request, slug):
             data["success"] = "Deletion was successful"
         else:
             data["failure"] = "Deletion failed"
-
         return Response(data=data)
 
 
 @api_view(["POST"])
-def upload_property_image(request):
+def uploadPropertyImage(request):
     data = request.data
+
     property_id = data["property_id"]
     property = Property.objects.get(id=property_id)
-
     property.cover_photo = request.FILES.get("cover_photo")
-
     property.photo1 = request.FILES.get("photo1")
     property.photo2 = request.FILES.get("photo2")
     property.photo3 = request.FILES.get("photo3")
     property.photo4 = request.FILES.get("photo4")
-
     property.save()
-
     return Response("Image(s) uploaded")
 
 

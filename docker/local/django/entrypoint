@@ -7,7 +7,7 @@ set -o pipefail
 set -o nounset
 
 postgres_ready() {
-  python <<END
+python << END
 import sys
 import psycopg2
 try:
@@ -26,9 +26,9 @@ END
 }
 
 until postgres_ready; do
-  echo >&2 "Waiting for PostgreSQL to become available....:-("
-  sleep 1
+ >&2 echo "Waiting for PostgreSQL to become available....:-("
+ sleep 1
 done
-echo >&2 "PostgreSQL is ready!!!!...:-)"
+>&2 echo "PostgreSQL is ready!!!!...:-)"
 
 exec "$@"
