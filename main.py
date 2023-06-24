@@ -112,13 +112,20 @@ def get_type(data):
     arkham_entity = get_value(data, "arkhamEntity")
     type = get_value(arkham_entity, "type")
 
-    social_fields = ["id", "website", "twitter", "crunchbase", "linkedin"]
-    socials = {field: data[field] for field in social_fields if field in data}
-
-    print(socials)
-    load_socials(socials)
-
     return type
+
+
+def get_socials(data):
+    arkham_entity = get_value(data, "arkhamEntity")
+
+    social_fields = ["id", "website", "twitter", "crunchbase", "linkedin"]
+    socials = {
+        key: get_value(arkham_entity, key)
+        for key in social_fields
+        if key in arkham_entity
+    }
+
+    return socials
 
 
 def get_address_type(obj):
@@ -149,7 +156,7 @@ def load_token_from_search(query_keys, s):
             address = get_value(obj, "address")
 
             intelligence_address = get_intelligence_address(address)
-            load_socials(intelligence_address)
+            socials = get_socials(intelligence_address)
 
             name = get_name(obj)
             tag = get_name(obj)
