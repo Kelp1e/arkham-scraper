@@ -1,36 +1,41 @@
 import json
+from time import sleep
 
-# https://securetoken.googleapis.com/v1/token?key=AIzaSyA9EERCXQ0gQstZRwcQ_Ws8XAELd2FUaXM
-# AIzaSyA9EERCXQ0gQstZRwcQ_Ws8XAELd2FUaXM
-# APZUo0TScmv9ltCZVH28QEN46-JoPyWSZGC_9KerLiDautnZJEFWLb1eHzQsceY9ZXUNve-6w7NoXI29g3-7R--LHHzTW9H8j5LmNp1iIAaWVbF6HJRzLyeqH-JUsgZ5nTgzy7QmAE20sZHIr4TpGQtt-kXv59NVZueDZYemw8RjBN909IgjHZYZ91E0NamdVkUzq-F3-WFTKmVUFdUh
 from cloudscraper import create_scraper
+from requests import HTTPError
 
+from db.models import Address
+from db.setup import create_session
 from request_data import headers
 
 scraper = create_scraper()
 
+chains = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
 
-def get_entities():
-    url = "https://api.arkhamintelligence.com/important_entities"
+
+def get(url):
     response = scraper.get(url, headers=headers)
-    print(response)
+    if response.status_code == 429:
+        print("sleeeeep")
+        sleep(5)
+        response = scraper.get(url, headers=headers)
+        return response
+    response.raise_for_status()
 
-    return response.json()
+    return response
 
 
-def get_more_entities(entities):
-    result = []
+def get_value(d, value):
+    if isinstance(d, dict):
+        return d.get(value)
 
-    for entity in entities:
-        response = scraper.get(
-            f"https://api.arkhamintelligence.com/intelligence/search?query={entity}",
-            headers=headers,
-        ).json()
-        arkham_entities_data = response.get("arkhamEntities", [])
-        sub_entities = [new_entity["id"] for new_entity in arkham_entities_data]
-        result.extend(sub_entities)
+    return d
 
-    return list(set(result))
+
+def remove_fields_from_dict(data, fields):
+    for field in fields:
+        if field in data:
+            del data[field]
 
 
 def load_query_keys(data):
@@ -43,3 +48,148 @@ def get_query_keys():
         return json.load(data)
 
 
+def get_entities():
+    url = "https://api.arkhamintelligence.com/important_entities"
+    response = get(url)
+
+    return response.json()
+
+
+def get_more_entities(entities):
+    result = []
+
+    for entity in entities:
+        response = get(
+            f"https://api.arkhamintelligence.com/intelligence/search?query={entity}",
+        ).json()
+        arkham_entities_data = get_value(response, "arkhamEntities")
+        sub_entities = [
+            get_value(new_entity, "id") for new_entity in arkham_entities_data
+        ]
+        result.extend(sub_entities)
+
+    return list(set(result))
+
+
+def to_correct_string_format(string):
+    if string == "ethereum":
+        return "evm"
+
+    return string
+
+
+def get_name(obj):
+    arkham_entity = get_value(obj, "arkhamEntity")
+
+    if arkham_entity:
+        if "id" in arkham_entity:
+            return get_value(arkham_entity, "id")
+        else:
+            return get_value(arkham_entity, "name")
+
+    return "MY_ERROR"
+
+
+def get_intelligence_address(address):
+    for chain in chains:
+        url = f"https://api.arkhamintelligence.com/intelligence/address/{address}?chain={chain}"
+        response = scraper.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        elif response.status_code == 429:
+            print(f"sleep... 429 when getting intelligence {address}")
+            sleep(5)
+            response = scraper.get(url, headers=headers)
+            if response.status_code == 200:
+                print(f"success! {address}")
+                return response.json()
+        else:
+            continue
+
+
+def get_type(data):
+    arkham_entity = get_value(data, "arkhamEntity")
+    type = get_value(arkham_entity, "type")
+
+    social_fields = ["id", "website", "twitter", "crunchbase", "linkedin"]
+    socials = {field: data[field] for field in social_fields if field in data}
+
+    print(socials)
+    load_socials(socials)
+
+    return type
+
+
+def get_address_type(obj):
+    arkham_label = get_value(obj, "arkhamLabel")
+    if arkham_label:
+        if "chainType" in arkham_label:
+            chain_type = get_value(arkham_label, "chainType")
+
+            return to_correct_string_format(chain_type)
+    else:
+        chain_type = get_value(obj, "chain")
+
+        return to_correct_string_format(chain_type)
+
+
+def load_socials(socials):
+    path = "socials.json"
+
+
+def load_token_from_search(query_keys, s):
+    for key in query_keys:
+        search_field = get(
+            f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
+        )
+        arkham_addresses = get_value(search_field.json(), "arkhamAddresses")
+
+        for obj in arkham_addresses:
+            address = get_value(obj, "address")
+
+            intelligence_address = get_intelligence_address(address)
+            load_socials(intelligence_address)
+
+            name = get_name(obj)
+            tag = get_name(obj)
+            type = get_type(intelligence_address)
+            address_type = get_address_type(obj)
+
+            db_address = s.query(Address).filter_by(address=address).first()
+            if db_address:
+                db_address.address = address
+                db_address.name = name
+                db_address.tag = tag
+                db_address.type = type
+                db_address.address_type = address_type
+            else:
+                db_address = Address(
+                    address=address,
+                    name=name,
+                    tag=tag,
+                    type=type,
+                    address_type=address_type,
+                )
+                s.add(db_address)
+            s.commit()
+
+        # print(f"""
+        #     address: {address}
+        #     name: {name}
+        #     tag: {tag}
+        #     address_type: {address_type}
+        # """)
+
+
+def main():
+    session = create_session()
+    s = session()
+
+    query_keys = get_query_keys()
+
+    load_token_from_search(query_keys, s)
+
+
+if __name__ == "__main__":
+    main()

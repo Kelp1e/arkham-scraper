@@ -18,6 +18,6 @@ class Address(Base):
     address_type = Column(String)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     engine = get_engine()
     Base.metadata.create_all(engine)
