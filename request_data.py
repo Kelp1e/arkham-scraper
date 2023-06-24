@@ -1,0 +1,17 @@
+headers = {
+    "authority": "api.arkhamintelligence.com",
+    "accept": "application/json, text/plain, */*",
+    "accept-language": "en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7",
+    "authorization": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjhkMDNhZTdmNDczZjJjNmIyNTI3NmMwNjM2MGViOTk4ODdlMjNhYTkiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiS2VscDFlIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2Fya2hhbS1kZXYtMjgxNDIzIiwiYXVkIjoiYXJraGFtLWRldi0yODE0MjMiLCJhdXRoX3RpbWUiOjE2ODc1ODM4ODAsInVzZXJfaWQiOiJGZzJSUlY5cU9HVGNRc28zR01iYmZQclgxMnIxIiwic3ViIjoiRmcyUlJWOXFPR1RjUXNvM0dNYmJmUHJYMTJyMSIsImlhdCI6MTY4NzYxMjQ2MywiZXhwIjoxNjg3NjE2MDYzLCJlbWFpbCI6InZsYWRrbHAyMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsidmxhZGtscDIyQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.kX7VAdNj_y12wI8wMOOZ0U3egWL-QCNoSXugo4_P87AwHwGzsmnNfCDf9u8pTvkel4gVyPbwMbeBDneky2ZYv6FN6Tmpa6-QRt7Hs3D8OaO-A7u9HZZipGV1pQzg5wieMKXviNumJCkSZIreGGIU9hlq0rHTIqGNRIeh8DODoxQTJu0xg_Aac9xUBulM38gAELNgeCmG9lXAML_qWn47gAR982p7QeKO5F8pWCXTHTNJKEvJuc8ha7qCOykXh4sHLopWpmtTSPuz6VPi642tEpEFNnnk9-9-eiaXho57fINUVVYA7k73psflgvuoDWssRldF6iC9-Kh-du1fB6fnmQ",
+    "cache-control": "no-cache",
+    "origin": "https://platform.arkhamintelligence.com",
+    "pragma": "no-cache",
+    "referer": "https://platform.arkhamintelligence.com/",
+    "sec-ch-ua": '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-site",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+}
