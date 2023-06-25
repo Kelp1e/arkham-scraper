@@ -32,7 +32,9 @@ def get(url, s=30):
             sleep(s)
             return get(url)
         if err.response.status_code == 401:
+            print(err)
             refresh_token()
+            print("Refresh")
             return get(url)
 
 
@@ -41,12 +43,6 @@ def get_value(d, value):
         return d.get(value)
 
     return d
-
-
-def remove_fields_from_dict(data, fields):
-    for field in fields:
-        if field in data:
-            del data[field]
 
 
 def load_query_keys(data):
