@@ -28,6 +28,7 @@ def get(url, s=30):
         return response
     except HTTPError as err:
         if err.response.status_code == 429:
+            print(err)
             sleep(s)
             return get(url)
         if err.response.status_code == 401:
@@ -42,15 +43,14 @@ def get_value(d, value):
     return d
 
 
-def load_query_keys(data):
-    with open("query_keys.json", "w") as file:
+def load_query_keys(data, path="query_keys.json"):
+    with open(path, "w") as file:
         json.dump(data, file)
 
 
 def get_query_keys():
     with open("query_keys.json", "r") as data:
         query_keys = json.load(data)
-        print(query_keys)
         return query_keys
 
 
@@ -69,31 +69,19 @@ def get_more_entities(entities):
             f"https://api.arkhamintelligence.com/intelligence/search?query={entity}",
         ).json()
         arkham_entities_data = get_value(response, "arkhamEntities")
-        sub_entities = [
-            get_value(new_entity, "id") for new_entity in arkham_entities_data
-        ]
-        result.extend(sub_entities)
+        if arkham_entities_data:
+            sub_entities = [
+                get_value(new_entity, "id") for new_entity in arkham_entities_data
+            ]
+            print(sub_entities)
+            result.extend(sub_entities)
 
     return list(set(result))
 
 
 def to_correct_string_format(string):
-    if string == "ethereum":
-        return "evm"
-
-    if string == "optimism":
-        return "evm"
-
-    if string == "polygon":
-        return "evm"
-
-    if string == "arbitrum_one":
-        return "evm"
-
-    if string == "avalanche":
-        return "evm"
-
-    if string == "bsc":
+    if string == "ethereum" or string == "optimism" or string == "polygon" \
+            or string == "arbitrum_one" or string == "avalanche" or string == "bsc":
         return "evm"
 
     if string == "bitcoin":
@@ -104,6 +92,15 @@ def to_correct_string_format(string):
 
     if string == "blur-io":
         return "blur"
+
+    if string == "cex":
+        return "exchange"
+
+    if string == "cdp":
+        return "dex"
+
+    if string == "crosschain-interoperability" or string == "smart-contract-platform":
+        return "bridge"
 
     return string
 
@@ -168,8 +165,24 @@ def load_socials(socials):
     name = get_value(socials, "id")
 
 
+# def remove_duplicate_dicts(list_of_dicts):
+#     keys_to_compare = ["id"]
+#     unique_dicts = []
+#     seen = set()
+#
+#     for dictionary in list_of_dicts:
+#         hash_string = ' '.join(str(dictionary[key]) for key in keys_to_compare)
+#
+#         if hash_string not in seen:
+#             unique_dicts.append(dictionary)
+#             seen.add(hash_string)
+#
+#     return unique_dicts
+#
+
 def load_token_from_search(query_keys, s):
-    for key in query_keys:
+    count = 0
+    for key in query_keys[-5:]:
         print(key)
         search_field = get(
             f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
@@ -181,7 +194,6 @@ def load_token_from_search(query_keys, s):
 
                 intelligence_address = get_intelligence_address(address)
                 socials = get_socials(intelligence_address)
-                load_socials(socials)
 
                 name = get_name(obj)
                 tag = get_name(obj)
@@ -189,6 +201,8 @@ def load_token_from_search(query_keys, s):
                 address_type = get_address_type(obj)
 
                 if None in (name, tag, type):
+                    print(f"count: {count}")
+                    count += 1
                     continue
 
                 db_address = s.query(Address).filter_by(address=address).first()
@@ -209,14 +223,24 @@ def load_token_from_search(query_keys, s):
                     s.add(db_address)
                 s.commit()
 
+    # with open("socials.json", "w") as file:
+    #     clear_socials = remove_duplicate_dicts(social_networks)
+    #     json.dump(clear_socials, file, indent=4)
+
 
 def main():
-    session = create_session()
-    s = session()
+    # session = create_session()
+    # s = session()
+    #
+    # query_keys = get_query_keys()
+    #
+    # load_token_from_search(query_keys, s)
 
-    query_keys = get_query_keys()
-
-    load_token_from_search(query_keys, s)
+    # k = get_query_keys()
+    # kk = get_more_entities(k)
+    # kkk = get_more_entities(kk)
+    # load_query_keys(kk, "query_keys2.json")
+    # load_query_keys(kkk, "query_keys3.json")
 
 
 if __name__ == "__main__":

@@ -51,6 +51,5 @@ def get_token():
     )
 
     access_token = response.json()["idToken"]
-    print(access_token)
 
     return access_token
