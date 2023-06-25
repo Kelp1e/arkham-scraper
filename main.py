@@ -14,7 +14,7 @@ CHAINS = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
 scraper = create_scraper()
 
 token = get_token()
-headers = get_headers_for_req(get_token())
+headers = get_headers_for_req(token)
 
 
 def refresh_token():
