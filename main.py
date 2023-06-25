@@ -9,14 +9,20 @@ from db.models import Address
 from db.setup import create_session
 from request_data import get_headers_for_req
 
+CHAINS = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
+
 scraper = create_scraper()
 
-chains = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
+token = get_token()
+headers = get_headers_for_req(token)
+
+
+def refresh_token():
+    headers["authorization"] = get_token()
 
 
 def get(url, s=30):
     try:
-        headers = get_headers_for_req(get_token())
         response = scraper.get(url, headers=headers)
         response.raise_for_status()
         return response
@@ -26,9 +32,8 @@ def get(url, s=30):
             sleep(s)
             return get(url)
         if err.response.status_code == 401:
-            headers = get_headers_for_req(get_token())
-            response = scraper.get(url, headers=headers)
-            return response
+            refresh_token()
+            return get(url)
 
 
 def get_value(d, value):
@@ -106,7 +111,7 @@ def get_name(obj):
 
 
 def get_intelligence_address(address):
-    for chain in chains:
+    for chain in CHAINS:
         url = f"https://api.arkhamintelligence.com/intelligence/address/{address}?chain={chain}"
         response = get(url)
 
@@ -163,7 +168,6 @@ def load_token_from_search(query_keys, s):
         arkham_addresses = get_value(search_field.json(), "arkhamAddresses")
 
         for obj in arkham_addresses:
-            print(obj)
             address = get_value(obj, "address").lower()
 
             intelligence_address = get_intelligence_address(address)

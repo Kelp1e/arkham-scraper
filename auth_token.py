@@ -1,6 +1,15 @@
+import os
+
 from cloudscraper import create_scraper
+from dotenv import load_dotenv
+
+load_dotenv()
 
 scraper = create_scraper()
+
+EMAIL = os.getenv("ARKHAM_EMAIL")
+PASSWORD = os.getenv("ARKHAM_PASSWORD")
+KEY = os.getenv("FIREBASE_KEY")
 
 headers = {
     "authority": "www.googleapis.com",
@@ -23,25 +32,24 @@ headers = {
 }
 
 params = {
-    "key": "AIzaSyA9EERCXQ0gQstZRwcQ_Ws8XAELd2FUaXM",
+    "key": KEY,
 }
 
 json_data = {
-    "email": "vladklp22@gmail.com",
-    "password": "aa0316icman",
+    "email": EMAIL,
+    "password": PASSWORD,
     "returnSecureToken": True,
 }
 
-response = scraper.post(
-    "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword",
-    params=params,
-    headers=headers,
-    json=json_data,
-)
-
 
 def get_token():
+    response = scraper.post(
+        "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword",
+        params=params,
+        headers=headers,
+        json=json_data,
+    )
+
     access_token = response.json()["idToken"]
-    print(access_token)
 
     return access_token
