@@ -236,11 +236,10 @@ def main():
     #
     # load_token_from_search(query_keys, s)
 
-    # k = get_query_keys()
-    # kk = get_more_entities(k)
-    # kkk = get_more_entities(kk)
-    # load_query_keys(kk, "query_keys2.json")
-    # load_query_keys(kkk, "query_keys3.json")
+    k = get_query_keys()
+
+    kk = get_more_entities(k)
+    load_query_keys(kk, "query_keys4.json")
 
 
 if __name__ == "__main__":
