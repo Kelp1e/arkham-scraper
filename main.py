@@ -4,25 +4,31 @@ from time import sleep
 from cloudscraper import create_scraper
 from requests import HTTPError
 
+from auth_token import get_token
 from db.models import Address
 from db.setup import create_session
-from request_data import headers
+from request_data import get_headers_for_req
 
 scraper = create_scraper()
 
 chains = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
 
 
-def get(url):
-    response = scraper.get(url, headers=headers)
-    if response.status_code == 429:
-        print("sleeeeep")
-        sleep(5)
+def get(url, s=30):
+    try:
+        headers = get_headers_for_req(get_token())
         response = scraper.get(url, headers=headers)
+        response.raise_for_status()
         return response
-    response.raise_for_status()
-
-    return response
+    except HTTPError as err:
+        if err.response.status_code == 429:
+            print(err, f"Sleeping for {s} seconds...")
+            sleep(s)
+            return get(url)
+        if err.response.status_code == 401:
+            headers = get_headers_for_req(get_token())
+            response = scraper.get(url, headers=headers)
+            return response
 
 
 def get_value(d, value):
@@ -45,7 +51,9 @@ def load_query_keys(data):
 
 def get_query_keys():
     with open("query_keys.json", "r") as data:
-        return json.load(data)
+        query_keys = json.load(data)
+        print(query_keys)
+        return query_keys
 
 
 def get_entities():
@@ -75,6 +83,15 @@ def to_correct_string_format(string):
     if string == "ethereum":
         return "evm"
 
+    if string == "optimism":
+        return "evm"
+
+    if string == "nft-marketplace":
+        return "marketplace"
+
+    if string == "blur-io":
+        return "blur"
+
     return string
 
 
@@ -87,45 +104,37 @@ def get_name(obj):
         else:
             return get_value(arkham_entity, "name")
 
-    return "MY_ERROR"
-
 
 def get_intelligence_address(address):
     for chain in chains:
         url = f"https://api.arkhamintelligence.com/intelligence/address/{address}?chain={chain}"
-        response = scraper.get(url, headers=headers)
+        response = get(url)
 
-        if response.status_code == 200:
+        if response and response.status_code == 200:
             return response.json()
-        elif response.status_code == 429:
-            print(f"sleep... 429 when getting intelligence {address}")
-            sleep(5)
-            response = scraper.get(url, headers=headers)
-            if response.status_code == 200:
-                print(f"success! {address}")
-                return response.json()
-        else:
-            continue
+
+        continue
 
 
 def get_type(data):
     arkham_entity = get_value(data, "arkhamEntity")
     type = get_value(arkham_entity, "type")
 
-    return type
+    return to_correct_string_format(type)
 
 
 def get_socials(data):
     arkham_entity = get_value(data, "arkhamEntity")
 
     social_fields = ["id", "website", "twitter", "crunchbase", "linkedin"]
-    socials = {
-        key: get_value(arkham_entity, key)
-        for key in social_fields
-        if key in arkham_entity
-    }
+    if arkham_entity:
+        socials = {
+            key: get_value(arkham_entity, key)
+            for key in social_fields
+            if key in arkham_entity
+        }
 
-    return socials
+        return socials
 
 
 def get_address_type(obj):
@@ -135,14 +144,15 @@ def get_address_type(obj):
             chain_type = get_value(arkham_label, "chainType")
 
             return to_correct_string_format(chain_type)
-    else:
-        chain_type = get_value(obj, "chain")
 
-        return to_correct_string_format(chain_type)
+    chain_type = get_value(obj, "chain")
+
+    return to_correct_string_format(chain_type)
 
 
 def load_socials(socials):
     path = "socials.json"
+    name = get_value(socials, "id")
 
 
 def load_token_from_search(query_keys, s):
@@ -153,15 +163,20 @@ def load_token_from_search(query_keys, s):
         arkham_addresses = get_value(search_field.json(), "arkhamAddresses")
 
         for obj in arkham_addresses:
-            address = get_value(obj, "address")
+            print(obj)
+            address = get_value(obj, "address").lower()
 
             intelligence_address = get_intelligence_address(address)
             socials = get_socials(intelligence_address)
+            load_socials(socials)
 
             name = get_name(obj)
             tag = get_name(obj)
             type = get_type(intelligence_address)
             address_type = get_address_type(obj)
+
+            if None in (name, tag, type):
+                continue
 
             db_address = s.query(Address).filter_by(address=address).first()
             if db_address:
@@ -180,13 +195,6 @@ def load_token_from_search(query_keys, s):
                 )
                 s.add(db_address)
             s.commit()
-
-        # print(f"""
-        #     address: {address}
-        #     name: {name}
-        #     tag: {tag}
-        #     address_type: {address_type}
-        # """)
 
 
 def main():

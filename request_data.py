@@ -1,17 +1,20 @@
-headers = {
-    "authority": "api.arkhamintelligence.com",
-    "accept": "application/json, text/plain, */*",
-    "accept-language": "en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7",
-    "cache-control": "no-cache",
-    "authorization": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjhkMDNhZTdmNDczZjJjNmIyNTI3NmMwNjM2MGViOTk4ODdlMjNhYTkiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiS2VscDFlIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2Fya2hhbS1kZXYtMjgxNDIzIiwiYXVkIjoiYXJraGFtLWRldi0yODE0MjMiLCJhdXRoX3RpbWUiOjE2ODc1ODM4ODAsInVzZXJfaWQiOiJGZzJSUlY5cU9HVGNRc28zR01iYmZQclgxMnIxIiwic3ViIjoiRmcyUlJWOXFPR1RjUXNvM0dNYmJmUHJYMTJyMSIsImlhdCI6MTY4NzYzMTExMCwiZXhwIjoxNjg3NjM0NzEwLCJlbWFpbCI6InZsYWRrbHAyMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsidmxhZGtscDIyQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.R738hNwONC3kHe0i42GMlPiFH6RtSSKGC7_ZunJhOVBPRJONrLfNySmXWIliIFKiFItDpTdDUm0I3oHsqVJFjIijl3sT2HWEVir-D_pGSNx1ftoE2aBL9YnFcLqpD_w9LoHDeaTECk8kMK7C8cXr2a0xJqR7Hs9BIZ9tEKx47JJ3VgH2pHoH4Rsdp9Ad4IpQGCUXIRNcTcRJGb25DBSu4GMP3g_I2e4OUigho-HkR4UKSOZnLlNqObV7r9D9TrZFi9jkH50m23s4E16Bd6qk5bdbUaG9ZLJfMfzT8tJfAJhBG8RS2mK-d3SCWw3vPomags_2wDua9q3aflP3MV65vw",
-    "origin": "https://platform.arkhamintelligence.com",
-    "pragma": "no-cache",
-    "referer": "https://platform.arkhamintelligence.com/",
-    "sec-ch-ua": '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-site",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-}
+def get_headers_for_req(token):
+    headers = {
+        "authority": "api.arkhamintelligence.com",
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7",
+        "cache-control": "no-cache",
+        "authorization": token,
+        "origin": "https://platform.arkhamintelligence.com",
+        "pragma": "no-cache",
+        "referer": "https://platform.arkhamintelligence.com/",
+        "sec-ch-ua": '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    }
+
+    return headers
