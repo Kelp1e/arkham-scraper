@@ -14,7 +14,7 @@ CHAINS = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
 scraper = create_scraper()
 
 token = get_token()
-headers = get_headers_for_req(token)
+headers = get_headers_for_req(get_token())
 
 
 def refresh_token():
@@ -28,13 +28,10 @@ def get(url, s=30):
         return response
     except HTTPError as err:
         if err.response.status_code == 429:
-            print(err, f"Sleeping for {s} seconds...")
             sleep(s)
             return get(url)
         if err.response.status_code == 401:
-            print(err)
             refresh_token()
-            print("Refresh")
             return get(url)
 
 
@@ -86,6 +83,21 @@ def to_correct_string_format(string):
 
     if string == "optimism":
         return "evm"
+
+    if string == "polygon":
+        return "evm"
+
+    if string == "arbitrum_one":
+        return "evm"
+
+    if string == "avalanche":
+        return "evm"
+
+    if string == "bsc":
+        return "evm"
+
+    if string == "bitcoin":
+        return "btc"
 
     if string == "nft-marketplace":
         return "marketplace"
@@ -158,43 +170,44 @@ def load_socials(socials):
 
 def load_token_from_search(query_keys, s):
     for key in query_keys:
+        print(key)
         search_field = get(
             f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
         )
         arkham_addresses = get_value(search_field.json(), "arkhamAddresses")
+        if arkham_addresses:
+            for obj in arkham_addresses:
+                address = get_value(obj, "address").lower()
 
-        for obj in arkham_addresses:
-            address = get_value(obj, "address").lower()
+                intelligence_address = get_intelligence_address(address)
+                socials = get_socials(intelligence_address)
+                load_socials(socials)
 
-            intelligence_address = get_intelligence_address(address)
-            socials = get_socials(intelligence_address)
-            load_socials(socials)
+                name = get_name(obj)
+                tag = get_name(obj)
+                type = get_type(intelligence_address)
+                address_type = get_address_type(obj)
 
-            name = get_name(obj)
-            tag = get_name(obj)
-            type = get_type(intelligence_address)
-            address_type = get_address_type(obj)
+                if None in (name, tag, type):
+                    continue
 
-            if None in (name, tag, type):
-                continue
-
-            db_address = s.query(Address).filter_by(address=address).first()
-            if db_address:
-                db_address.address = address
-                db_address.name = name
-                db_address.tag = tag
-                db_address.type = type
-                db_address.address_type = address_type
-            else:
-                db_address = Address(
-                    address=address,
-                    name=name,
-                    tag=tag,
-                    type=type,
-                    address_type=address_type,
-                )
-                s.add(db_address)
-            s.commit()
+                db_address = s.query(Address).filter_by(address=address).first()
+                if db_address:
+                    db_address.address = address
+                    db_address.name = name
+                    db_address.tag = tag
+                    db_address.type = type
+                    db_address.address_type = address_type
+                else:
+                    db_address = Address(
+                        address=address,
+                        name=name,
+                        tag=tag,
+                        type=type,
+                        address_type=address_type,
+                    )
+                    s.add(db_address)
+                s.commit()
 
 
 def main():
