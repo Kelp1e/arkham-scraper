@@ -239,7 +239,7 @@ def main():
     k = get_query_keys()
 
     kk = get_more_entities(k)
-    load_query_keys(kk, "query_keys_many.json")
+    load_query_keys(kk, "query_keys_more.json")
 
 
 if __name__ == "__main__":
