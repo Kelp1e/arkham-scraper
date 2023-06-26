@@ -44,27 +44,6 @@ def get_value(d, value):
     return d
 
 
-def load_query_keys(data, path="query_keys.json"):
-    with open(path, "w") as file:
-        json.dump(data, file)
-
-
-def get_query_keys(path="query_keys.json"):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--more", action="store_true")
-    args = parser.parse_args()
-
-    with open(path, "r") as data:
-        query_keys = json.load(data)
-
-    if args.more:
-        more_keys = get_more_entities(query_keys)
-
-        return more_keys
-
-    return query_keys
-
-
 def get_entities():
     url = "https://api.arkhamintelligence.com/important_entities"
     response = get(url)
@@ -87,6 +66,27 @@ def get_more_entities(entities):
             result.extend(sub_entities)
 
     return list(set(result))
+
+
+def load_query_keys(data, path="query_keys.json"):
+    with open(path, "w") as file:
+        json.dump(data, file)
+
+
+def get_query_keys(path="query_keys.json"):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--more", action="store_true")
+    args = parser.parse_args()
+
+    with open(path, "r") as data:
+        query_keys = json.load(data)
+
+    if args.more:
+        more_keys = get_more_entities(query_keys)
+        load_query_keys(more_keys, "query_keys.json")
+        return more_keys
+
+    return query_keys
 
 
 def to_correct_string_format(string):
@@ -249,12 +249,14 @@ def load_token_from_search(query_keys, s):
 
 
 def main():
-    session = create_session()
-    s = session()
+    # session = create_session()
+    # s = session()
+    #
+    # query_keys = get_query_keys()
+    #
+    # load_token_from_search(query_keys, s)
 
-    query_keys = get_query_keys()
-
-    load_token_from_search(query_keys, s)
+    print(1)
 
 
 if __name__ == "__main__":
