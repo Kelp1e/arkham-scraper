@@ -1,3 +1,4 @@
+import argparse
 import json
 from time import sleep
 
@@ -48,10 +49,20 @@ def load_query_keys(data, path="query_keys.json"):
         json.dump(data, file)
 
 
-def get_query_keys():
-    with open("query_keys.json", "r") as data:
+def get_query_keys(path="query_keys.json"):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--more", action="store_true")
+    args = parser.parse_args()
+
+    with open(path, "r") as data:
         query_keys = json.load(data)
-        return query_keys
+
+    if args.more:
+        more_keys = get_more_entities(query_keys)
+
+        return more_keys
+
+    return query_keys
 
 
 def get_entities():
@@ -73,15 +84,20 @@ def get_more_entities(entities):
             sub_entities = [
                 get_value(new_entity, "id") for new_entity in arkham_entities_data
             ]
-            print(sub_entities)
             result.extend(sub_entities)
 
     return list(set(result))
 
 
 def to_correct_string_format(string):
-    if string == "ethereum" or string == "optimism" or string == "polygon" \
-            or string == "arbitrum_one" or string == "avalanche" or string == "bsc":
+    if (
+            string == "ethereum"
+            or string == "optimism"
+            or string == "polygon"
+            or string == "arbitrum_one"
+            or string == "avalanche"
+            or string == "bsc"
+    ):
         return "evm"
 
     if string == "bitcoin":
@@ -180,10 +196,11 @@ def load_socials(socials):
 #     return unique_dicts
 #
 
+
 def load_token_from_search(query_keys, s):
     count = 0
+    unnecessary_count = 0
     for key in query_keys[-5:]:
-        print(key)
         search_field = get(
             f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
         )
@@ -201,8 +218,8 @@ def load_token_from_search(query_keys, s):
                 address_type = get_address_type(obj)
 
                 if None in (name, tag, type):
-                    print(f"count: {count}")
-                    count += 1
+                    print(f"unnecessary: {unnecessary_count}")
+                    unnecessary_count += 1
                     continue
 
                 db_address = s.query(Address).filter_by(address=address).first()
@@ -223,23 +240,21 @@ def load_token_from_search(query_keys, s):
                     s.add(db_address)
                 s.commit()
 
+                print(f"count: {count}")
+                count += 1
+
     # with open("socials.json", "w") as file:
     #     clear_socials = remove_duplicate_dicts(social_networks)
     #     json.dump(clear_socials, file, indent=4)
 
 
 def main():
-    # session = create_session()
-    # s = session()
-    #
-    # query_keys = get_query_keys()
-    #
-    # load_token_from_search(query_keys, s)
+    session = create_session()
+    s = session()
 
-    k = get_query_keys()
+    query_keys = get_query_keys()
 
-    kk = get_more_entities(k)
-    load_query_keys(kk, "query_keys_more.json")
+    load_token_from_search(query_keys, s)
 
 
 if __name__ == "__main__":
