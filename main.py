@@ -241,6 +241,11 @@ def load_token_from_search(query_keys, s):
     count = 0
     social_networks = []
     for key in query_keys:
+        keys_from_db = [i[0] for i in list(set(s.query(Address.tag).all()))]
+        if key in keys_from_db:
+            print(f"skip {key}")
+            continue
+
         print(f"{count}: {key}")
         search_field = get(
             f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
