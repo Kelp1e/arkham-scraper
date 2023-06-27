@@ -10,8 +10,6 @@ from db.models import Address
 from db.setup import create_session
 from request_data import get_headers_for_req
 
-CHAINS = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
-
 scraper = create_scraper()
 
 token = get_token()
@@ -150,7 +148,7 @@ def to_correct_string(string):
         "cex": "exchange",
         "cdp": "dex",
         "crosschain-interoperability": "bridge",
-        "smart-contract-platform": "bridge"
+        "smart-contract-platform": "bridge",
     }
 
     if string in replacements:
@@ -180,7 +178,9 @@ def get_name(obj):
 
 
 def get_intelligence_address(address):
-    for chain in CHAINS:
+    chains = ["bitcoin", "ethereum", "tron", "arbitrum_one"]
+
+    for chain in chains:
         url = f"https://api.arkhamintelligence.com/intelligence/address/{address}?chain={chain}"
         response = get(url)
 
@@ -192,9 +192,10 @@ def get_intelligence_address(address):
 
 def get_type(data):
     arkham_entity = get_value(data, "arkhamEntity")
-    type = get_value(arkham_entity, "type")
+    if arkham_entity:
+        type = get_value(arkham_entity, "type")
 
-    return to_correct_string(type)
+        return to_correct_string(type)
 
 
 def get_socials(data):
@@ -229,7 +230,7 @@ def remove_duplicate_objects(lst):
 
     for obj in lst:
         if obj:
-            obj_id = obj.get('id')
+            obj_id = obj.get("id")
             if obj_id and len(obj.keys()) > 1:
                 unique_objects[obj_id] = obj
 
@@ -240,7 +241,7 @@ def load_token_from_search(query_keys, s):
     count = 0
     unnecessary_count = 0
     social_networks = []
-    for key in query_keys[5010:]:
+    for key in query_keys[:100]:
         print(f"{count}: {key}")
         search_field = get(
             f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
@@ -250,7 +251,6 @@ def load_token_from_search(query_keys, s):
         if arkham_addresses:
             for obj in arkham_addresses:
                 address = get_value(obj, "address").lower()
-
                 intelligence_address = get_intelligence_address(address)
                 socials = get_socials(intelligence_address)
                 social_networks.append(socials)
@@ -262,7 +262,7 @@ def load_token_from_search(query_keys, s):
 
                 if None in (name, tag, type):
                     print(f"unnecessary: {unnecessary_count}")
-                    print(obj)
+
                     unnecessary_count += 1
                     continue
 
@@ -290,12 +290,13 @@ def load_token_from_search(query_keys, s):
 
 
 def main():
-    session = create_session()
-    s = session()
-
-    query_keys = get_query_keys()
-
-    load_token_from_search(query_keys, s)
+    # session = create_session()
+    # s = session()
+    #
+    # query_keys = get_query_keys()
+    #
+    # load_token_from_search(query_keys, s)
+    print(len(get_query_keys("socials.json")))
 
 
 if __name__ == "__main__":
