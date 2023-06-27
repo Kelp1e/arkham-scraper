@@ -239,9 +239,8 @@ def remove_duplicate_objects(lst):
 
 def load_token_from_search(query_keys, s):
     count = 0
-    unnecessary_count = 0
     social_networks = []
-    for key in query_keys[:100]:
+    for key in query_keys:
         print(f"{count}: {key}")
         search_field = get(
             f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
@@ -261,9 +260,6 @@ def load_token_from_search(query_keys, s):
                 address_type = get_address_type(obj)
 
                 if None in (name, tag, type):
-                    print(f"unnecessary: {unnecessary_count}")
-
-                    unnecessary_count += 1
                     continue
 
                 db_address = s.query(Address).filter_by(address=address).first()
@@ -290,13 +286,12 @@ def load_token_from_search(query_keys, s):
 
 
 def main():
-    # session = create_session()
-    # s = session()
-    #
-    # query_keys = get_query_keys()
-    #
-    # load_token_from_search(query_keys, s)
-    print(len(get_query_keys("socials.json")))
+    session = create_session()
+    s = session()
+
+    query_keys = get_query_keys()
+
+    load_token_from_search(query_keys, s)
 
 
 if __name__ == "__main__":
