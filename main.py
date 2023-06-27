@@ -89,46 +89,94 @@ def get_query_keys(path="query_keys.json"):
     return query_keys
 
 
-def to_correct_string_format(string):
-    if (
-            string == "ethereum"
-            or string == "optimism"
-            or string == "polygon"
-            or string == "arbitrum_one"
-            or string == "avalanche"
-            or string == "bsc"
-    ):
-        return "evm"
+def to_correct_string(string):
+    replacements = {
+        "trader-joe": "traderJoe",
+        "rari-capital": "rariCapital",
+        "polychain-capital": "polychainCapital",
+        "immutable-x": "immutableX",
+        "defiance-capital": "deFianceCapital",
+        "plutusdao": "plutusDao",
+        "infinity-stones": "InfStones",
+        "lucky-block": "luckyblock",
+        "vesta-finance": "vestaFinance",
+        "nexus-mutual": "nexusMutual",
+        "beethoven-x": "beethovenX",
+        "hundred-finance": "hundredFinance",
+        "mintdice": "mintDice",
+        "olympusdao": "olympusDao",
+        "figment-capital": "figmentCapital",
+        "crypto-com": "crypto.com",
+        "pantera-capital": "panteraCapital",
+        "alpaca-finance": "alpacaFinance",
+        "ftx-us": "fts us",
+        "layerzero": "layerZero",
+        "hop-protocol": "hopProtocol",
+        "xt-com": "xt.com exchange",
+        "rhinofi": "rhino.fi",
+        "harvest-finance": "harvestFinance",
+        "bittrex*": "bittrex*",
+        "axie-infinity": "axieInfinity",
+        "anchor-protocol": "anchorProtocol",
+        "openleverage": "openleverage",
+        "rocket-pool": "rocketPool",
+        "abyss-finance": "abyssFinance",
+        "convex-finance": "convexFinance",
+        "cake-defi": "cakeDefi",
+        "tornado-cash": "tornadoCash",
+        "clipper-dex": "clipperDex",
+        "parafi-capital": "parafiCapital",
+        "overnight": "overnight.fi",
+        "across-protocol": "acrossProtocol",
+        "cake-monster": "cakeMonster",
+        "akuna-capital": "akunaCapital",
+        "reaper-farm": "reaperFarm",
+        "falconx": "falconX",
+        "celsius-network": "celsiusNetwork",
+        "starry-night-capital": "starryNightCapital",
+        "trade-io": "trade.io",
+        "flata-exchange": "flataexchange",
+        "gate-io": "gate.io",
+        "li-fi": "li.fi",
+        "ethereum": "evm",
+        "optimism": "evm",
+        "polygon": "evm",
+        "arbitrum_one": "evm",
+        "avalanche": "evm",
+        "bsc": "evm",
+        "bitcoin": "btc",
+        "nft-marketplace": "marketplace",
+        "blur-io": "blur",
+        "cex": "exchange",
+        "cdp": "dex",
+        "crosschain-interoperability": "bridge",
+        "smart-contract-platform": "bridge"
+    }
 
-    if string == "bitcoin":
-        return "btc"
-
-    if string == "nft-marketplace":
-        return "marketplace"
-
-    if string == "blur-io":
-        return "blur"
-
-    if string == "cex":
-        return "exchange"
-
-    if string == "cdp":
-        return "dex"
-
-    if string == "crosschain-interoperability" or string == "smart-contract-platform":
-        return "bridge"
+    if string in replacements:
+        return replacements[string]
 
     return string
+
+
+def get_tag(obj):
+    arkham_entity = get_value(obj, "arkhamEntity")
+
+    if arkham_entity:
+        if "id" in arkham_entity:
+            return to_correct_string(get_value(arkham_entity, "id"))
+        else:
+            return to_correct_string(get_value(arkham_entity, "name"))
 
 
 def get_name(obj):
     arkham_entity = get_value(obj, "arkhamEntity")
 
     if arkham_entity:
-        if "id" in arkham_entity:
-            return get_value(arkham_entity, "id")
+        if "name" in arkham_entity:
+            return to_correct_string(get_value(arkham_entity, "name"))
         else:
-            return get_value(arkham_entity, "name")
+            return to_correct_string(get_value(arkham_entity, "id"))
 
 
 def get_intelligence_address(address):
@@ -146,7 +194,7 @@ def get_type(data):
     arkham_entity = get_value(data, "arkhamEntity")
     type = get_value(arkham_entity, "type")
 
-    return to_correct_string_format(type)
+    return to_correct_string(type)
 
 
 def get_socials(data):
@@ -169,56 +217,52 @@ def get_address_type(obj):
         if "chainType" in arkham_label:
             chain_type = get_value(arkham_label, "chainType")
 
-            return to_correct_string_format(chain_type)
+            return to_correct_string(chain_type)
 
     chain_type = get_value(obj, "chain")
 
-    return to_correct_string_format(chain_type)
+    return to_correct_string(chain_type)
 
 
-def load_socials(socials):
-    path = "socials.json"
-    name = get_value(socials, "id")
+def remove_duplicate_objects(lst):
+    unique_objects = {}
 
+    for obj in lst:
+        if obj:
+            obj_id = obj.get('id')
+            if obj_id and len(obj.keys()) > 1:
+                unique_objects[obj_id] = obj
 
-# def remove_duplicate_dicts(list_of_dicts):
-#     keys_to_compare = ["id"]
-#     unique_dicts = []
-#     seen = set()
-#
-#     for dictionary in list_of_dicts:
-#         hash_string = ' '.join(str(dictionary[key]) for key in keys_to_compare)
-#
-#         if hash_string not in seen:
-#             unique_dicts.append(dictionary)
-#             seen.add(hash_string)
-#
-#     return unique_dicts
-#
+    return list(unique_objects.values())
 
 
 def load_token_from_search(query_keys, s):
     count = 0
     unnecessary_count = 0
-    for key in query_keys[-5:]:
+    social_networks = []
+    for key in query_keys[5010:]:
+        print(f"{count}: {key}")
         search_field = get(
             f"https://api.arkhamintelligence.com/intelligence/search?query={key}"
         )
         arkham_addresses = get_value(search_field.json(), "arkhamAddresses")
+        count += 1
         if arkham_addresses:
             for obj in arkham_addresses:
                 address = get_value(obj, "address").lower()
 
                 intelligence_address = get_intelligence_address(address)
                 socials = get_socials(intelligence_address)
+                social_networks.append(socials)
 
                 name = get_name(obj)
-                tag = get_name(obj)
+                tag = get_tag(obj)
                 type = get_type(intelligence_address)
                 address_type = get_address_type(obj)
 
                 if None in (name, tag, type):
                     print(f"unnecessary: {unnecessary_count}")
+                    print(obj)
                     unnecessary_count += 1
                     continue
 
@@ -240,23 +284,18 @@ def load_token_from_search(query_keys, s):
                     s.add(db_address)
                 s.commit()
 
-                print(f"count: {count}")
-                count += 1
-
-    # with open("socials.json", "w") as file:
-    #     clear_socials = remove_duplicate_dicts(social_networks)
-    #     json.dump(clear_socials, file, indent=4)
+    with open("socials.json", "w") as file:
+        clear_socials = remove_duplicate_objects(social_networks)
+        json.dump(clear_socials, file, indent=4)
 
 
 def main():
-    # session = create_session()
-    # s = session()
-    #
-    # query_keys = get_query_keys()
-    #
-    # load_token_from_search(query_keys, s)
+    session = create_session()
+    s = session()
 
-    print(1)
+    query_keys = get_query_keys()
+
+    load_token_from_search(query_keys, s)
 
 
 if __name__ == "__main__":

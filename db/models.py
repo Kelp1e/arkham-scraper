@@ -9,9 +9,7 @@ Base = declarative_base()
 class Address(Base):
     __tablename__ = "addresses"
 
-    id = Column(Integer, primary_key=True)
-
-    address = Column(String)
+    address = Column(String, primary_key=True)
     name = Column(String)
     tag = Column(String)
     type = Column(String)
